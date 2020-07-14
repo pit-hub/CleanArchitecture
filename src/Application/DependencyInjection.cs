@@ -20,6 +20,7 @@ namespace CleanArchitecture.Application
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(UnhandledExceptionBehaviour<,>));
 
+            services.AddScoped(typeof(ScopedLoggingFilter<>));
             services.AddMediator(x =>
             {
                 x.ConfigureMediator((context, cfg) =>
@@ -27,7 +28,7 @@ namespace CleanArchitecture.Application
                     cfg.ConnectConsumerConfigurationObserver(new LoggingConsumerConfigurationObserver());
                     cfg.ConnectConsumerConfigurationObserver(new ValidationConsumerConfigurationObserver());
 
-//                    cfg.UseConsumeFilter(typeof(ScopedLoggingFilter<>), context);
+                    cfg.UseConsumeFilter(typeof(ScopedLoggingFilter<>), context);
                 });
 
                 x.AddConsumers(Assembly.GetExecutingAssembly());
