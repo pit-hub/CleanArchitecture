@@ -1,24 +1,24 @@
-﻿using MediatR;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CleanArchitecture.Application.Common.Interfaces;
+using CleanArchitecture.Application.TodoLists.Commands.UpdateTodoList;
+using FluentValidation;
+using MassTransit;
+using Microsoft.EntityFrameworkCore;
 
 namespace CleanArchitecture.Application.WeatherForecasts.Queries.GetWeatherForecasts
 {
-    public class GetWeatherForecastsQuery : IRequest<IEnumerable<WeatherForecast>>
+    public class WeatherForecastsConsumer :
+        IConsumer<GetWeatherForecasts>
     {
-    }
-
-    public class GetWeatherForecastsQueryHandler : IRequestHandler<GetWeatherForecastsQuery, IEnumerable<WeatherForecast>>
-    {
-        private static readonly string[] Summaries = new[]
+        static readonly string[] Summaries =
         {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
 
-        public Task<IEnumerable<WeatherForecast>> Handle(GetWeatherForecastsQuery request, CancellationToken cancellationToken)
+        public async Task Consume(ConsumeContext<GetWeatherForecasts> context)
         {
             var rng = new Random();
 
@@ -29,7 +29,29 @@ namespace CleanArchitecture.Application.WeatherForecasts.Queries.GetWeatherForec
                 Summary = Summaries[rng.Next(Summaries.Length)]
             });
 
-            return Task.FromResult(vm);
+            await context.RespondAsync<WeatherForecasts>(new
+            {
+                Forecasts = vm
+            });
         }
+    }
+
+    public class GetWeatherForecastsValidator : AbstractValidator<GetWeatherForecasts>
+    {
+        public GetWeatherForecastsValidator()
+        {
+            RuleFor(v => v.Page)
+                .GreaterThanOrEqualTo(0).WithMessage("Page must be > 0");
+        }
+    }
+
+    public interface GetWeatherForecasts
+    {
+        int Page { get; }
+    }
+
+    public interface WeatherForecasts
+    {
+        WeatherForecast[] Forecasts { get; }
     }
 }
