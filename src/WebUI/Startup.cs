@@ -91,7 +91,12 @@ namespace CleanArchitecture.WebUI
             }
 
             app.UseHealthChecks("/health");
-            app.UseHttpsRedirection();
+
+            if( ! env.IsDevelopment() ) //Environment.GetEnvironmentVariable("REMOTE_CONTAINERS") != "true"
+            {
+                app.UseHttpsRedirection();
+            }
+
             app.UseStaticFiles();
             if (!env.IsDevelopment())
             {
