@@ -1,0 +1,85 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "CA dotnet build",
+      "command": "dotnet",
+      "type": "process",
+      "group": "build",
+      "args": [
+        "build",
+        "CleanArchitecture.sln"
+      ],
+      "problemMatcher": "$tsc"
+    },
+    {
+      "label": "CA dotnet restore",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "restore",
+        "CleanArchitecture.sln"
+      ],
+      "problemMatcher": "$tsc"
+    },
+    {
+      "label": "CA-ClientApp npm install/update",
+      "type": "npm",
+      "script": "update",
+      "path": "src/WebUI/ClientApp/",
+      "options": {
+        "env": {
+          "NG_CLI_ANALYTICS": "0"
+        }
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      },
+      "isBackground": true,
+      "problemMatcher": [
+      ]
+    },
+    {
+      "label": "CA-ClientApp npm start/serve",
+      "type": "npm",
+      "script": "start",
+      "path": "src/WebUI/ClientApp/",
+      "options": {
+        "env": {
+          "NG_CLI_ANALYTICS": "0"
+        }
+      },
+      "isBackground": true,
+      "runOptions": {
+        "instanceLimit": 1
+      },
+      "problemMatcher": [
+      ]
+    },
+    {
+      "label": "npm launch",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "CA dotnet restore",
+        "CA-ClientApp npm install/update",
+        "CA-ClientApp npm start/serve"
+      ],
+      "runOptions": {
+        "instanceLimit": 1,
+        "runOn": "folderOpen"
+      }
+    },
+    {
+      "label": "open ports",
+      "type": "shell",
+      "command": "(lsof -i -P -n | grep 5001) || echo No processes found for port 5001",
+      "problemMatcher": []
+    },
+    {
+      "label": "kill",
+      "type": "shell",
+      "command": "(fuser -k 5001/tcp) || echo No processes found to kill for port 5001",
+      "problemMatcher": []
+    }
+  ]
+}

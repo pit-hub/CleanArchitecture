@@ -1,0 +1,81 @@
+{
+  "name": "Clean Archtecture with DOTNET 5.0 & node lte",
+  "image": "petganrq/try-it:devcontainers_netcore50-node-latest",
+  // If you prefere to customize the docker image copy "Dockerfile" to the ".devcontainer" folder, uncomment "dockerFile" below and comment "image"
+  // "dockerFile": "Dockerfile",
+  "settings": {
+    "terminal.integrated.shell.linux": "/bin/bash",
+    // Make sure that the user profile is sourced for the shell.
+    "terminal.integrated.shellArgs.linux": [
+      "--login"
+    ],
+    "omnisharp.enableEditorConfigSupport": true,
+    "nxConsole.useNVM": true
+  },
+  "extensions": [
+    "editorconfig.editorconfig",
+    "coenraads.bracket-pair-colorizer-2",
+    "doggy8088.netcore-extension-pack",
+    "fudge.auto-using",
+    "dannymcgee.csharp-grammar-extended",
+    "yzhang.markdown-all-in-one",
+    "alanwalk.markdown-toc",
+    "johnpapa.angular-essentials",
+    "alexiv.vscode-angular2-files",
+    "formulahendry.auto-close-tag",
+    "formulahendry.auto-rename-tag",
+    "steoates.autoimport",
+    "vscode-icons-team.vscode-icons",
+    "ms-azuretools.vscode-docker",
+    "vsls-contrib.codetour",
+    "jhipster-ide.jdl",
+    "mikestead.dotenv",
+    "ms-dotnettools.csharp"
+  ],
+  "forwardPorts": [
+    // Development backend default https
+    5001
+  ],
+  "containerEnv": {
+    // Disable Anugular asking for statistics collection.
+    "NG_CLI_ANALYTICS": "0",
+    "NUGET_XMLDOC_MODE": "none",
+    "ASPNETCORE_ENVIRONMENT": "Development",
+    // The following ASPNETCORE_URLS will for the
+    // Use all interfaces if in remote environment like Github Codespace.
+    "ASPNETCORE_URLS": "http://0.0.0.0:5001",
+    // Use localhost if in local containers.
+    //"ASPNETCORE_URLS": "http://localhost:5001",
+    // Pass in the host directory for Docker mount commands from inside the container
+    "DEV_HOST_PROJECT_PATH": "${localWorkspaceFolder}"
+  },
+  "remoteEnv": {
+    // Disable Anugular asking for statistics collection.
+    "NG_CLI_ANALYTICS": "0",
+    "NUGET_XMLDOC_MODE": "none",
+    "ASPNETCORE_ENVIRONMENT": "Development",
+    // Use all interfaces if in remote environment like Github Codespace.
+    "ASPNETCORE_URLS": "http://0.0.0.0:5001",
+    // Use localhost if in local containers.
+    //"ASPNETCORE_URLS": "http://localhost:5001",
+    // Pass in the host directory for Docker mount commands from inside the container
+    "DEV_HOST_PROJECT_PATH": "${localWorkspaceFolder}"
+  },
+  "mounts": [
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
+    // VSCode Server extension local cache mount
+    // Exclude special folder to be mapped to the dev container
+    "source=ca-webui-clientapp-node_modules,target=${containerWorkspaceFolder}/src/WebUI/ClientApp/node_modules/,type=volume",
+    // "source=dotnet-project-obj,target=${containerWorkspaceFolder}/src/dotnet-project/obj/,type=volume",
+    // "source=dotnet-project-bin,target=${containerWorkspaceFolder}/src/dotnet-project/bin/,type=volume",
+    // "source=dotnet-project-out,target=${containerWorkspaceFolder}/src/dotnet-project/out/,type=volume",
+    // "source=node-project-node_modules,target=${containerWorkspaceFolder}/src/node-project/node_modules/,type=volume"
+  ],
+  // Default Remote workspace bind
+  //   doc: https://code.visualstudio.com/docs/remote/containers-advanced#_changing-the-default-source-code-mount
+  // "workspaceMount": "source=${localWorkspaceFolder},target=${containerWorkspaceFolder},type=bind,consistency=cached",
+  // ,"workspaceFolder": "/workspaces"
+  // "postCreateCommand": "[ -f ./devcontainer/first-run-on-create.sh] && ./devcontainer/first-run-on-create.sh || true"
+  // Uncomment to connect as a non-root user. See https://aka.ms/vscode-remote/containers/non-root.
+  // ,"remoteUser": "vscode"
+}
