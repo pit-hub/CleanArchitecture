@@ -1,0 +1,90 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    // ...
+    // Dotnet build
+    {
+      "label": "clientapp build",
+      "command": "dotnet",
+      "type": "process",
+      "group": {
+        "kind": "build"//,
+        //"isDefault": true
+      },
+      "args": [
+        "build",
+        "${workspaceFolder}/CleanArchitecture.sln"
+      ],
+      "problemMatcher": "$tsc"
+    },
+    // ...
+    // Node - webUI ClientApp install
+    {
+      "label": "npm install",
+      "type": "shell",
+      "options": {
+      "cwd": "${workspaceFolder}/src/WebUI/ClientApp"
+      },
+      "linux": {
+        "command": "nvm",
+        "args": [
+            "exec", "default",
+            "npm",
+            "install"
+          ]
+      },
+      "windows":{
+        "command": "npm",
+        "args": [
+          "install"
+        ]
+      },
+      "runOptions": {
+        "instanceLimit": 1
+        //"runOn": "folderOpen"
+      },
+      //"problemMatcher": "$tsc"
+      "problemMatcher": []
+    },
+    {
+        "label": "npm launch",
+        "dependsOn": [
+            "npm install",
+            "npm start"
+        ],
+        "runOptions": {
+          "instanceLimit": 1,
+          "runOn": "folderOpen"
+        }
+    },
+    // ...
+    // Node - start runner
+    {
+      "label": "npm start",
+      "type": "shell",
+      "options": {
+      "cwd": "${workspaceFolder}/src/WebUI/ClientApp"
+      },
+      "linux": {
+        "command": "nvm",
+        "args": [
+            "exec", "default",
+            "npm",
+            "start"
+          ]
+      },
+      "windows":{
+        "command": "npm",
+        "args": [
+          "start"
+        ]
+      },
+      "isBackground": true,
+      "runOptions": {
+        "instanceLimit": 1
+      },
+      "problemMatcher": "$tsc"
+    }
+    // ...
+  ]
+}
