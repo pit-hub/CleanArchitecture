@@ -47,29 +47,27 @@ RUN install-packages \
     && update-locale LANG=C.UTF-8 \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME\
     && chmod 0440 /etc/sudoers.d/$USERNAME \
-    && curl -fsSL https://dot.net/v1/dotnet-install.sh | bash -s -- --install-dir $DOTNET_INSTALL_DIR\
+    && curl -fsSL https://dot.net/v1/dotnet-install.sh | bash -s -- --version 5.0.200 --install-dir $DOTNET_INSTALL_DIR \
     # Set dotnet paths
-    && echo "export DOTNET_ROOT='$DOTNET_INSTALL_DIR'"> /etc/profile.d/dotnet.sh \
-    && echo 'export PATH="~/.dotnet/tools:$DOTNET_ROOT:$PATH"'> /etc/profile.d/dotnet.sh \
+    && echo "export DOTNET_ROOT='$DOTNET_INSTALL_DIR'"> /home/$USERNAME/.bashrc.d/40-dotnet.sh \
+    && echo 'export PATH="~/.dotnet/tools:$DOTNET_ROOT:$PATH"'>> /home/$USERNAME/.bashrc.d/40-dotnet.sh \
     # Set owner to .vscode-serverXYZ folders
     && chown -R $USERNAME:$USERNAME \
         /home/$USERNAME \
-    # root user node installs
-    && /bin/bash -c "source $NVM_DIR/nvm.sh \
-            && nvm install ${NODE_VERSION} \
-            && nvm alias default ${NODE_VERSION} \
-            && npm install -g npm typescript yarn 2>&1" \
     # Set nvm profile loading and path
     && chmod -R g+w "$NVM_DIR" \
     && chmod a+r "$NVM_DIR/nvm.sh" \
     && chmod a+r "$NVM_DIR/bash_completion" \
-    && echo "export NVM_DIR='$NVM_DIR'" > /etc/profile.d/nvm.sh \
-    && echo '[ -s "$NVM_DIR/nvm-lazy.sh" ] && source "$NVM_DIR/nvm-lazy.sh" || [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh" || true' >> /etc/profile.d/nvm.sh \
-    && echo '[ -s "$NVM_DIR/bash_completion" ] && source "$NVM_DIR/bash_completion" || true' >> /etc/profile.d/nvm.sh \
-    && chmod 644 /etc/profile.d/nvm.sh \
-    && [ ! -f /home/$USERNAME/.bashrc.d/50-node ] || rm -f /home/$USERNAME/.bashrc.d/50-node \
+    && echo "export NVM_DIR='$NVM_DIR'" > /home/$USERNAME/.bashrc.d/50-node \
+    && echo '[ -s "$NVM_DIR/nvm-lazy.sh" ] && source "$NVM_DIR/nvm-lazy.sh" || [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh" || true' >> /home/$USERNAME/.bashrc.d/50-node \
+    && echo '[ -s "$NVM_DIR/bash_completion" ] && source "$NVM_DIR/bash_completion" || true' >> /home/$USERNAME/.bashrc.d/50-node \
+    && chmod 644 /home/$USERNAME/.bashrc.d/50-node \
     # Set node modules path
-    && echo 'export PATH="./node_modules/.bin:$PATH"' > /etc/profile.d/node_modules.sh
+    && echo 'export PATH="./node_modules/.bin:$PATH"' > /home/$USERNAME/.bashrc.d/50-node_modules
+
+USER gitpod
+
+RUN update-locale LANG=C.UTF-8
 
 # Debian containers have a bug supporting locales in containers, so we use C.UTF-8 because some apps need it.
 ENV \
@@ -77,5 +75,4 @@ ENV \
   LANG=C.UTF-8 \
   LANGUAGE=C.UTF-8
 
-WORKDIR /root
 
