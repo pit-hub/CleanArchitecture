@@ -67,8 +67,6 @@ RUN install-packages \
 
 USER gitpod
 
-RUN update-locale LANG=C.UTF-8
-
 # Debian containers have a bug supporting locales in containers, so we use C.UTF-8 because some apps need it.
 ENV \
   LC_ALL=C.UTF-8 \
