@@ -1,0 +1,50 @@
+# The Docker image to run your workspace in. Defaults to gitpod/workspace-full
+# image: gitpod/workspace-dotnet
+image: gitpod/workspace-dotnet:commit-5e44473668a64adee2da4c8857e3d22c3e8fb524
+# image:
+#   file: .gitpod.Dockerfile
+# Command to start on workspace startup (optional)
+tasks:
+  - init: dotnet restore CleanArchitecture.sln
+  - init: cd src/WebUI/ClientApp ; export NG_CLI_ANALYTICS=0; npm install
+  - command: cd src/WebUI/ClientApp && npm start
+    name: CA-ClientApp npm start/serve
+# Ports to expose on workspace startup (optional)
+ports:
+  - port: 4200
+    onOpen: ignore
+  - port: 5000
+    onOpen: ignore
+  - port: 5001
+    onOpen: open-preview
+vscode:
+  extensions:
+    - doggy8088.netcore-extension-pack
+    - fudge.auto-using
+    - dannymcgee.csharp-grammar-extended
+    - alanwalk.markdown-toc
+    - johnpapa.angular-essentials
+    - alexiv.vscode-angular2-files
+    - formulahendry.auto-close-tag
+    - formulahendry.auto-rename-tag
+    - steoates.autoimport
+    - vscode-icons-team.vscode-icons
+    - jhipster-ide.jdl
+    - mikestead.dotenv
+    - ms-dotnettools.csharp
+    - muhammad-sammy.csharp@1.23.9:BMArOoGwWqKRrH6s4E2/AQ==
+    - k--kato.docomment@0.1.20:AOapjS0kDQARhasrDkxpmw==
+    - eg2.vscode-npm-script@0.3.11:Np1+d2YoqckGfeIuPylSEw==
+
+# image: gitpod/workspace-dotnet
+
+# # List the ports you want to expose and what to do when they are served. See https://www.gitpod.io/docs/43_config_ports/
+# ports:
+#   - port: 5000
+#     onOpen: ignore
+#   - port: 5001
+#     onOpen: open-preview
+
+# # List the start up tasks. You can start them in parallel in multiple terminals. See https://www.gitpod.io/docs/44_config_start_tasks/
+# tasks:
+#   - command: cd aspnetcoreapp/ && dotnet run --urls http://0.0.0.0:5001
