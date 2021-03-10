@@ -1,0 +1,122 @@
+apiVersion: 1.0.0
+metadata:
+  name: clean-architecture-demo
+projects:
+  - name: CleanArchitecture
+    source:
+      location: 'https://github.com/pit-hub/CleanArchitecture.git'
+      type: github
+      branch: ide-full
+components:
+  - id: redhat-developer/che-omnisharp-plugin/latest
+    memoryLimit: 1024Mi
+    type: chePlugin
+    alias: omnisharp
+  - id: redhat-developer/netcoredbg-theia-plugin/latest
+    memoryLimit: 512Mi
+    type: chePlugin
+    alias: netcoredbg
+  - id: che-incubator/typescript/latest
+    memoryLimit: 512Mi
+    type: chePlugin
+    alias: nodejs
+  - id: ms-vscode/node-debug2/latest
+    type: chePlugin
+    # alias: nodejs
+  - mountSources: true
+    endpoints:
+      - name: ca-webclient-web-endpoint
+        port: 5001
+      - name: ca-webclient-nodejs-endpoint
+        port: 3000
+    memoryLimit: 512Mi
+    type: dockerimage
+    volumes:
+      - name: nuget
+        containerPath: /home/jboss/.nuget
+    alias: dotnet
+    image: 'registry.redhat.io/codeready-workspaces/stacks-dotnet-rhel8@sha256:d1118dcd50ec1e1ba9171206893e937b39cef878676f65fa55dfae906bde75e7'
+    # alias: nodejs
+    # image: 'registry.redhat.io/codeready-workspaces/plugin-java8-rhel8@sha256:6a80d35f7524516ad5efa7b60e9ae82e683d3c5f23f0895636f40c11bb863d98'
+commands:
+  - name: 1. Update dependencies
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/CleanArchitecture'
+        type: exec
+        command: dotnet restore
+        component: dotnet
+  - name: 2. Build
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/CleanArchitecture'
+        type: exec
+        command: dotnet build
+        component: dotnet
+  - name: 3. Run
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/CleanArchitecture'
+        type: exec
+        command: ASPNETCORE_ENVIRONMENT=Development ;dotnet run
+        component: dotnet
+  - name: 1. Run the web app (and download dependencies)
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/src/WebUI/ClientApp'
+        type: exec
+        command: npm install; nodemon --exec "npm start"
+        component: nodejs
+  - name: 2. Download dependencies
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/src/WebUI/ClientApp'
+        type: exec
+        command: npm update
+        component: nodejs
+  - name: 3. Run the web app
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/src/WebUI/ClientApp'
+        type: exec
+        command: nodemon --exec "npm start"
+        component: nodejs
+  - name: 4. Run the web app (debugging enabled)
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/src/WebUI/ClientApp'
+        type: exec
+        command: nodemon --inspect app.js
+        component: nodejs
+  - name: 5. Stop the web app
+    actions:
+      - type: exec
+        command: 'node_server_pids=$(pgrep -fx ''.*nodemon (--inspect )?app.js'' | tr "\\n" " ") && echo "Stopping node server with PIDs: ${node_server_pids}" &&  kill -15 ${node_server_pids} &>/dev/null && echo ''Done.'''
+        component: nodejs
+  - name: Launch ClientApp (web) in debug mode
+    actions:
+      - referenceContent: |
+          {
+            "version": "0.2.0",
+            "configurations": [
+              {
+                "type": "netcoredbg",
+                "request": "launch",
+                "program": "/projects/CleanArchitecture/src/WebUI/bin/Debug/net5.0/CleanArchitecture.WebUI.dll",
+                "args": [
+                  "--project", "${workspaceFolder}/CleanArchitecture/src/WebUI",
+                  "--environment", "Development",
+                  "--urls", "http://0.0.0.0:5001"
+                ],
+                options": {
+                  "name": "ClientApp (web) - from git",
+                  "stopAtEntry": true,
+                  "preLaunchTask": "2. Build",
+                  "console": "internalConsole"
+                }
+              },
+              {
+                "type": "node",
+                "request": "attach",
+                "name": "Attach to Remote",
+                "address": "localhost",
+                "port": 9229,
+                "localRoot": "${workspaceFolder}/CleanArchitecture/src/WebUI/ClientApp",
+                "remoteRoot": "${workspaceFolder}/CleanArchitecture/src/WebUI/ClientApp"
+              }
+            ]
+          }
+        type: vscode-launch

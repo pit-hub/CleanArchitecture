@@ -1,7 +1,8 @@
 # The Docker image to run your workspace in. Defaults to gitpod/workspace-full
-# image: gitpod/workspace-dotnet
-image:
-  file: .gitpod.Dockerfile
+image: gitpod/workspace-dotnet
+# image: gitpod/workspace-dotnet:commit-5e44473668a64adee2da4c8857e3d22c3e8fb524
+# image:
+#   file: .gitpod.Dockerfile
 # Command to start on workspace startup (optional)
 tasks:
   - init: dotnet restore CleanArchitecture.sln
