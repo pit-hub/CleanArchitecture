@@ -5,11 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
-          "name": "ClientApp (web)",
+          "name": "ClientApp (web-theia)",
           "type": "coreclr",
           "request": "launch",
           "preLaunchTask": "CA dotnet build",
           "cwd": "${workspaceFolder}/src/WebUI",
+          // "console": "internalConsole",
+          "console": "integratedTerminal",
+          "internalConsoleOptions": "openOnSessionStart",
           "stopAtEntry": false,
           "launchBrowser": {
             "enabled": true
