@@ -1,6 +1,7 @@
 apiVersion: 1.0.0
 metadata:
-  name: clean-architecture-demo
+  # name: clean-architecture-demo
+  generateName: clean-architecture-demo-
 projects:
   - name: CleanArchitecture
     source:
@@ -15,11 +16,14 @@ components:
   - id: redhat-developer/netcoredbg-theia-plugin/latest
     memoryLimit: 512Mi
     type: chePlugin
+    volumes:
+      - name: nuget
+        containerPath: /home/jboss/.nuget
     alias: netcoredbg
   - id: che-incubator/typescript/latest
     memoryLimit: 512Mi
     type: chePlugin
-    alias: nodejs
+    # alias: nodejs
   - id: ms-vscode/node-debug2/latest
     type: chePlugin
     # alias: nodejs
@@ -27,64 +31,86 @@ components:
     endpoints:
       - name: ca-webclient-web-endpoint
         port: 5001
-      - name: ca-webclient-nodejs-endpoint
-        port: 3000
+        attributes:
+          protocol: http
+          secure: 'false'
+          public: 'true'
+          discoverable: 'false'
     memoryLimit: 512Mi
     type: dockerimage
     volumes:
       - name: nuget
         containerPath: /home/jboss/.nuget
+    env:
+      - name: ASPNETCORE_ENVIRONMENT
+        value: "Development"
+      - name: ASPNETCORE_URLS
+        value: "http://0.0.0.0:5001"
+      - name: REMOTE_CONTAINERS
+        value: "true"
     alias: dotnet
     image: 'registry.redhat.io/codeready-workspaces/stacks-dotnet-rhel8@sha256:d1118dcd50ec1e1ba9171206893e937b39cef878676f65fa55dfae906bde75e7'
-    # alias: nodejs
-    # image: 'registry.redhat.io/codeready-workspaces/plugin-java8-rhel8@sha256:6a80d35f7524516ad5efa7b60e9ae82e683d3c5f23f0895636f40c11bb863d98'
+  - mountSources: true
+    endpoints:
+      - name: nodejs
+        port: 4200
+        attributes:
+          protocol: http
+          secure: 'true'
+          public: 'true'
+          discoverable: 'false'
+    memoryLimit: 2048Mi
+    type: dockerimage
+    volumes:
+      - name: npm
+        containerPath: /home/jboss/.npm
+    env:
+      - name: NG_CLI_ANALYTICS
+        value: "0"
+    alias: nodejs
+    image: 'registry.redhat.io/codeready-workspaces/plugin-java8-rhel8@sha256:6a80d35f7524516ad5efa7b60e9ae82e683d3c5f23f0895636f40c11bb863d98'
 commands:
-  - name: 1. Update dependencies
+  - name: 1. Restore
     actions:
       - workdir: '${CHE_PROJECTS_ROOT}/CleanArchitecture'
         type: exec
-        command: dotnet restore
+        command: dotnet restore CleanArchitecture.sln
         component: dotnet
   - name: 2. Build
     actions:
       - workdir: '${CHE_PROJECTS_ROOT}/CleanArchitecture'
         type: exec
-        command: dotnet build
+        command: dotnet build CleanArchitecture.sln
         component: dotnet
   - name: 3. Run
     actions:
-      - workdir: '${CHE_PROJECTS_ROOT}/CleanArchitecture'
+      - workdir: '${CHE_PROJECTS_ROOT}/CleanArchitecture/src/WebUI'
         type: exec
-        command: ASPNETCORE_ENVIRONMENT=Development ;dotnet run
+        command: ASPNETCORE_ENVIRONMENT=Development ; dotnet bin/Debug/net5.0/CleanArchitecture.WebUI.dll --urls http://0.0.0.0:5001 --environment Development
         component: dotnet
-  - name: 1. Run the web app (and download dependencies)
+  - name: 1. Install dependencies
     actions:
-      - workdir: '${CHE_PROJECTS_ROOT}/src/WebUI/ClientApp'
+      - workdir: '${CHE_PROJECTS_ROOT}/CleanArchitecture/src/WebUI/ClientApp'
         type: exec
-        command: npm install; nodemon --exec "npm start"
+        command: NG_CLI_ANALYTICS=0; npm clean-install
         component: nodejs
-  - name: 2. Download dependencies
+  - name: 2. NG Serve
     actions:
-      - workdir: '${CHE_PROJECTS_ROOT}/src/WebUI/ClientApp'
-        type: exec
-        command: npm update
-        component: nodejs
-  - name: 3. Run the web app
-    actions:
-      - workdir: '${CHE_PROJECTS_ROOT}/src/WebUI/ClientApp'
+      - workdir: '${CHE_PROJECTS_ROOT}/CleanArchitecture/src/WebUI/ClientApp'
         type: exec
         command: nodemon --exec "npm start"
         component: nodejs
-  - name: 4. Run the web app (debugging enabled)
+  - name: 3. NG Serve (debugging enabled)
     actions:
-      - workdir: '${CHE_PROJECTS_ROOT}/src/WebUI/ClientApp'
+      - workdir: '${CHE_PROJECTS_ROOT}/CleanArchitecture/src/WebUI/ClientApp'
         type: exec
-        command: nodemon --inspect app.js
+        command: nodemon --exec "npm run start:dev"
         component: nodejs
-  - name: 5. Stop the web app
+  - name: 5. Stop NG Serve
     actions:
-      - type: exec
-        command: 'node_server_pids=$(pgrep -fx ''.*nodemon (--inspect )?app.js'' | tr "\\n" " ") && echo "Stopping node server with PIDs: ${node_server_pids}" &&  kill -15 ${node_server_pids} &>/dev/null && echo ''Done.'''
+      - workdir: '${CHE_PROJECTS_ROOT}/CleanArchitecture/src/WebUI/ClientApp'
+        type: exec
+        command: 'node_server_pids=$(pgrep -fx ''.*nodemon --exec npm .*start.*'' | tr "\\n" " ") && echo "Stopping node server with PIDs: ${node_server_pids}" &&  kill -15 ${node_server_pids} &>/dev/null && echo ''Done.'''
         component: nodejs
   - name: Launch ClientApp (web) in debug mode
     actions:
@@ -93,6 +119,7 @@ commands:
             "version": "0.2.0",
             "configurations": [
               {
+                "name": "ClientApp (web) - from git",
                 "type": "netcoredbg",
                 "request": "launch",
                 "program": "/projects/CleanArchitecture/src/WebUI/bin/Debug/net5.0/CleanArchitecture.WebUI.dll",
@@ -101,17 +128,16 @@ commands:
                   "--environment", "Development",
                   "--urls", "http://0.0.0.0:5001"
                 ],
-                options": {
-                  "name": "ClientApp (web) - from git",
+                "options": {
                   "stopAtEntry": true,
                   "preLaunchTask": "2. Build",
                   "console": "internalConsole"
                 }
               },
               {
+                "name": "Attach to Remote",
                 "type": "node",
                 "request": "attach",
-                "name": "Attach to Remote",
                 "address": "localhost",
                 "port": 9229,
                 "localRoot": "${workspaceFolder}/CleanArchitecture/src/WebUI/ClientApp",
