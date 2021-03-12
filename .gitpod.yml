@@ -6,17 +6,20 @@ image: gitpod/workspace-dotnet
 # Command to start on workspace startup (optional)
 tasks:
   - init: dotnet restore CleanArchitecture.sln
-  - init: cd src/WebUI/ClientApp ; export NG_CLI_ANALYTICS=0; npm install
-  - command: cd src/WebUI/ClientApp && npm start
-    name: CA-ClientApp npm start/serve
+  - init: cd src/WebUI/ClientApp ; export NG_CLI_ANALYTICS=0; npm install && npm run start:dev
+  # - command: cd src/WebUI/ClientApp && npm run start:dev
+  #   name: CA-ClientApp npm start/serve (on open)
 # Ports to expose on workspace startup (optional)
 ports:
   - port: 4200
     onOpen: ignore
+    visibility: private
   - port: 5000
     onOpen: ignore
+    visibility: private
   - port: 5001
     onOpen: open-preview
+    visibility: public
 vscode:
   extensions:
     - doggy8088.netcore-extension-pack

@@ -37,11 +37,11 @@
       "problemMatcher": "$tsc"
     },
     {
-      "label": "CA-ClientApp npm install/update",
+      "label": "CA-ClientApp npm clean-install",
       "type": "shell",
       "command": "npm",
       "args": [
-        "update"
+        "clean-install"
       ],
       "options": {
         "cwd": "${workspaceFolder}/src/WebUI/ClientApp",
@@ -61,7 +61,8 @@
       "type": "shell",
       "command": "npm",
       "args": [
-        "start"
+        "run",
+        "start:dev"
       ],
       "options": {
         "cwd": "${workspaceFolder}/src/WebUI/ClientApp",
