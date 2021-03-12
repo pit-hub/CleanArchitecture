@@ -48,6 +48,12 @@ components:
         value: "http://0.0.0.0:5001"
       - name: REMOTE_CONTAINERS
         value: "true"
+      - name: LC_ALL
+        value: "C.UTF-8"
+      - name: LANG
+        value: "C.UTF-8"
+      - name: LANGUAGE
+        value: "C.UTF-8"
     alias: dotnet
     image: 'registry.redhat.io/codeready-workspaces/stacks-dotnet-rhel8@sha256:d1118dcd50ec1e1ba9171206893e937b39cef878676f65fa55dfae906bde75e7'
   - mountSources: true
